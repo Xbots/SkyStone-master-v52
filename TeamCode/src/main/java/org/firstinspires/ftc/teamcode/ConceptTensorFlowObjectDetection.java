@@ -1,4 +1,4 @@
-/* Copyright (c) 2018 FIRST. All rights reserved.
+/* Copyright (c) 2019 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -42,8 +42,8 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import java.util.List;
 
 /**
- * This 2018-2019 OpMode illustrates the basics of using the TensorFlow Object Detection API to
- * determine the position of the gold and silver minerals.
+ * This 2019-2020 OpMode illustrates the basics of using the TensorFlow Object Detection API to
+ * determine the position of the Skystone game elements.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
@@ -51,11 +51,11 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "TensorFlow Object Detection", group = "Concept")
-public class TensorFlowObjectDetection extends LinearOpMode {
-    private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
-    private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
-    private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
+@TeleOp(name = "Concept: TensorFlow Object Detection", group = "Concept")
+public class ConceptTensorFlowObjectDetection extends LinearOpMode {
+    private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
+    private static final String LABEL_FIRST_ELEMENT = "Stone";
+    private static final String LABEL_SECOND_ELEMENT = "Skystone";
 
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
@@ -69,8 +69,8 @@ public class TensorFlowObjectDetection extends LinearOpMode {
      * Once you've obtained a license key, copy the string from the Vuforia web site
      * and paste it in to your code on the next line, between the double quotes.
      */
-    private static final String VUFORIA_KEY = "AYEB3rP/////AAABmVMCZTLJIE0TrkP2639XOkl5oPNywXyUOnq52N57nxQ2Q4KVO6xRk1CWWvTIbeZfVku0ISp4m3dPUpfORFAHlDqKOCdLUfRP78YbJexyDYJ+q2KQlap1/SH5sZi/llSpn5Y0b30k/VK/txgdo7TsyZBNZrcldc0KRiwo3NVeQwuVHjxFLJsU0P3MmwNDKZ5Fax3l1yglpGB5Ej2Vevu1gmVfGxxcnMaw0m89+olVLW/rKOB1mOjNC4nwOMsljk/5uY0OMBfkm14r6/HnvXk5bX/GLyBL2gPRdmIL5wtAn0JDjoa+RkhA930mTv0h4Mzh1gZ3PLwWf3Nnt3T5Qu7ffT/RX9zPJ7pKOlp9m4a0Hfs5";
-
+    private static final String VUFORIA_KEY =
+            "AYEB3rP/////AAABmVMCZTLJIE0TrkP2639XOkl5oPNywXyUOnq52N57nxQ2Q4KVO6xRk1CWWvTIbeZfVku0ISp4m3dPUpfORFAHlDqKOCdLUfRP78YbJexyDYJ+q2KQlap1/SH5sZi/llSpn5Y0b30k/VK/txgdo7TsyZBNZrcldc0KRiwo3NVeQwuVHjxFLJsU0P3MmwNDKZ5Fax3l1yglpGB5Ej2Vevu1gmVfGxxcnMaw0m89+olVLW/rKOB1mOjNC4nwOMsljk/5uY0OMBfkm14r6/HnvXk5bX/GLyBL2gPRdmIL5wtAn0JDjoa+RkhA930mTv0h4Mzh1gZ3PLwWf3Nnt3T5Qu7ffT/RX9zPJ7pKOlp9m4a0Hfs5";
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
      * localization engine.
@@ -78,7 +78,7 @@ public class TensorFlowObjectDetection extends LinearOpMode {
     private VuforiaLocalizer vuforia;
 
     /**
-     * {@link #tfod} is the variable we will use to store our instance of the Tensor Flow Object
+     * {@link #tfod} is the variable we will use to store our instance of the TensorFlow Object
      * Detection engine.
      */
     private TFObjectDetector tfod;
@@ -95,17 +95,20 @@ public class TensorFlowObjectDetection extends LinearOpMode {
             telemetry.addData("Sorry!", "This device is not compatible with TFOD");
         }
 
+        /**
+         * Activate TensorFlow Object Detection before we wait for the start command.
+         * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
+         **/
+        if (tfod != null) {
+            tfod.activate();
+        }
+
         /** Wait for the game to begin */
-        telemetry.addData(">", "Press Play to start tracking");
+        telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
         waitForStart();
 
         if (opModeIsActive()) {
-            /** Activate Tensor Flow Object Detection. */
-            if (tfod != null) {
-                tfod.activate();
-            }
-
             while (opModeIsActive()) {
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
@@ -113,28 +116,15 @@ public class TensorFlowObjectDetection extends LinearOpMode {
                     List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                     if (updatedRecognitions != null) {
                       telemetry.addData("# Object Detected", updatedRecognitions.size());
-                      if (updatedRecognitions.size() == 3) {
-                        int goldMineralX = -1;
-                        int silverMineral1X = -1;
-                        int silverMineral2X = -1;
-                        for (Recognition recognition : updatedRecognitions) {
-                          if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                            goldMineralX = (int) recognition.getLeft();
-                          } else if (silverMineral1X == -1) {
-                            silverMineral1X = (int) recognition.getLeft();
-                          } else {
-                            silverMineral2X = (int) recognition.getLeft();
-                          }
-                        }
-                        if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
-                          if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                            telemetry.addData("Gold Mineral Position", "Left");
-                          } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                            telemetry.addData("Gold Mineral Position", "Right");
-                          } else {
-                            telemetry.addData("Gold Mineral Position", "Center");
-                          }
-                        }
+
+                      // step through the list of recognitions and display boundary info.
+                      int i = 0;
+                      for (Recognition recognition : updatedRecognitions) {
+                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                          recognition.getLeft(), recognition.getTop());
+                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                recognition.getRight(), recognition.getBottom());
                       }
                       telemetry.update();
                     }
@@ -162,17 +152,18 @@ public class TensorFlowObjectDetection extends LinearOpMode {
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
     }
 
     /**
-     * Initialize the Tensor Flow Object Detection engine.
+     * Initialize the TensorFlow Object Detection engine.
      */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
             "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minimumConfidence = 0.8;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
 }

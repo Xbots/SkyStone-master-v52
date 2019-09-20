@@ -51,7 +51,6 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="XBI Drive", group="XBI")
-@Disabled
 public class BasicOpMode_Iterative extends OpMode
 {
     // Declare OpMode members.
