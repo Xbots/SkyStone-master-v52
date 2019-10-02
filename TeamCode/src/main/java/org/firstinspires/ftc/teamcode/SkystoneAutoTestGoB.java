@@ -92,10 +92,40 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
 
         while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist) {
             moveBackward (backwardSpeed, startHeading);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
         }
         robot.allStop();
     }
-    
+
+    public void strafeRight(double speed, double dist)
+    {
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("StrafeRight: ", robot.fr.getCurrentPosition());
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist)
+        {
+            robot.driveLimitless(-speed, -speed, speed, speed);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+    }
+
+    public void strafeLeft(double speed, double dist)
+    {
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("StrafeLeft: ", robot.fr.getCurrentPosition());
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() < dist)
+        {
+            robot.driveLimitless(speed, speed, -speed, -speed);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+    }
+
     public void moveForward(double forwardSpeed, double startHeading){
         leftChange = forwardSpeed;
         rightChange = forwardSpeed;
@@ -116,4 +146,7 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         telemetry.update();
         //comDbg.debugMessage("MvFwd: left Change, right Change: " + Double.toString(leftChange) +", " +Double.toString(rightChange));
     }
+
+
+
 }
