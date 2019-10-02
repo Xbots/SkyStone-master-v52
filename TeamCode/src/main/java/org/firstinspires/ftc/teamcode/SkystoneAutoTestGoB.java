@@ -59,6 +59,11 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
           //d.debugMessage("Sampling done.");
           //stopRobot();
           driveX(DS, 20);
+          strafeRight(DS, 10);
+          driveXback(DS, 20);
+          strafeLeft(DS, 10);
+          sleep(2000);
+          rotate(90);
           d.closeDebugger();
       }
   }
