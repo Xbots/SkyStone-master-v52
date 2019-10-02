@@ -139,7 +139,6 @@ public class RaiseLift extends LinearOpMode {
             // Determine new target position, and pass to motor controller
             newTarget = robot.lift.getCurrentPosition() + (int)(height * COUNTS_PER_INCH);
             robot.lift.setTargetPosition(newTarget);
-
             // Turn On RUN_TO_POSITION
             robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 

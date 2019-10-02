@@ -112,7 +112,7 @@ public class HardwareRover {
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

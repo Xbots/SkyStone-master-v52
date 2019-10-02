@@ -109,7 +109,7 @@ public class HardwareXplorer {
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //extender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 

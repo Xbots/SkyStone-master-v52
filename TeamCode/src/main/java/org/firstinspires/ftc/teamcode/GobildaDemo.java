@@ -55,21 +55,7 @@ public class GobildaDemo extends OpMode {
         double collectorPower = 0;
         double distPower = 0;
 
-        // Keep the collector box flat/horizontal position if these buttons are not pressed
-        if(!gamepad1.dpad_up && !gamepad1.dpad_right &&!gamepad1.dpad_left && !gamepad1.y
-                && !gamepad1.right_bumper  && (gamepad1.right_trigger==0) && (gamepad1.left_trigger==0)
-                &&!gamepad2.y &&!gamepad2.a) {
-            //robot.intake.setPosition(0.4);
-            // buttons to trigger flatness
-            // drive ( gamepad2.left/right_x/y;
-            // g1.dpad_down ( extender retracts
-            // g1.x ( loader lowers )
-            // g1.a g1.b
-            // g1.left_bumper
-            // can remove code below in some sections if it works
-            // main goal - to bring the collector back up flat once trigger is released - will it work?
-        } 
-
+        robot.resetEncoders();
 
         if(gamepad2.left_stick_y == 0 && gamepad2.left_stick_x == 0 && !(abs(gamepad2.right_stick_x) > threshold))
         {
@@ -84,6 +70,12 @@ public class GobildaDemo extends OpMode {
             robot.bl.setPower(speed_multiplier *( speed_reverse* (gamepad2.left_stick_y + gamepad2.left_stick_x)/2-(gamepad2.right_stick_x)/2));
             robot.fr.setPower(speed_multiplier *( speed_reverse* (-gamepad2.left_stick_y - gamepad2.left_stick_x)/2-(gamepad2.right_stick_x)/2));
             robot.br.setPower(speed_multiplier *( speed_reverse* (-gamepad2.left_stick_y + gamepad2.left_stick_x)/2-(gamepad2.right_stick_x)/2));
+
+            telemetry.addData("fl.enc ",robot.fl.getCurrentPosition());
+            telemetry.addData("fr.enc ",robot.fr.getCurrentPosition());
+            telemetry.addData("bl.enc ",robot.bl.getCurrentPosition());
+            telemetry.addData("br.enc ",robot.br.getCurrentPosition());
+            telemetry.update();
         }
 
 

@@ -61,13 +61,13 @@ public class BasicOpMode_Iterative extends OpMode
     /*
      * Code to run ONCE when the driver hits INIT
      */
-    @Override
+    @Override //e names assigned during the robot configuration
+    // step (using the FTC Robot Con
     public void init() {
         telemetry.addData("Status", "Initialized");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+        // to 'get' must correspond to thtroller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left");
         rightDrive = hardwareMap.get(DcMotor.class, "right");
 

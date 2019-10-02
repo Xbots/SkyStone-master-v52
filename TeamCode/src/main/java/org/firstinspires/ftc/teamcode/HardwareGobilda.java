@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 //import com.qualcomm.robotcore.hardware.configuration.MotorConfigurationType;
 
 /**
- * Modified by isaiahturner on 9/15/18.
+ * Modified by xbots on 10/01/19.
  */
 /*4 motors for wheels
     1 pulley-use y to raise the lift b to lower the lift
@@ -29,31 +29,12 @@ public class HardwareGobilda {
     public DcMotor fr  = null;
     public DcMotor bl  = null;
     public DcMotor br  = null;
-    /*
-    public DcMotor lifter = null;//
-    public DcMotor collector = null;
-    public DcMotor extender = null;
-    public DcMotor distributor = null;
-*/
+
     public BNO055IMU gyro = null;
-    /*
-    public Servo markerMover = null;
-    public Servo intake = null;
-    public Servo loader = null;
-    public DistanceSensor leftDistanceSensor;
-    //public DistanceSensor frontRightDistanceSensor;
-    //public DistanceSensor backRightDistanceSensor;
-    public ModernRoboticsI2cRangeSensor rangeSensor, otherRangeSensor;
 
-    public DistanceSensor frontDistanceSensor;
-
-*/
     Orientation lastAngles = new Orientation();
     double globalAngle = 0;
     public static final double MID_SERVO       =  0.5 ;
-
-
-    //public ServoController servoController1 = null;
 
 
     /* local OpMode members. */
@@ -76,27 +57,8 @@ public class HardwareGobilda {
         fr  = hwMap.dcMotor.get("fr");
         bl   = hwMap.dcMotor.get("bl");
         br  = hwMap.dcMotor.get("br");
-        /*
-        lifter  = hwMap.dcMotor.get("lifter");
-         */
-        /*
-        collector = hwMap.dcMotor.get("collector");
-        extender  = hwMap.dcMotor.get("extender");
-        distributor  = hwMap.dcMotor.get("distributor");
-        markerMover = hwMap.servo.get("markerMover");
-        //leftDistanceSensor =  hwMap.get(DistanceSensor.class, "leftSensor");
-        //frontRightDistanceSensor =  hwMap.get(DistanceSensor.class, "frontRightSensor");
-        //backRightDistanceSensor =  hwMap.get(DistanceSensor.class, "rightSensor");
-        leftDistanceSensor =  hwMap.get(DistanceSensor.class, "leftSensor");
-        rangeSensor = hwMap.get(ModernRoboticsI2cRangeSensor.class, "MRrangeSensor");
-        otherRangeSensor = hwMap.get(ModernRoboticsI2cRangeSensor.class, "MRrangeOther");
-        frontDistanceSensor = hwMap.get(DistanceSensor.class, "range");
-        intake = hwMap.servo.get("intake");
-        loader = hwMap.servo.get("loader");
-        */
 
 
-        //claw = hwMap.servo.get("claw");
         BNO055IMU.Parameters parameters =  new BNO055IMU.Parameters();
         parameters.mode                = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -110,21 +72,16 @@ public class HardwareGobilda {
         fr.setPower(sp);
         bl.setPower(sp);
         br.setPower(sp);
-        //lifter.setPower(sp);
 
         fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        //lifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void resetEncoders()
@@ -152,11 +109,7 @@ public class HardwareGobilda {
         newBRTarget = br.getCurrentPosition()+brtarget;
 
         resetEncoders();
-
-        fl.setPower(flspeed);
-        fr.setPower(frspeed);
-        bl.setPower(blspeed);
-        br.setPower(brspeed);
+        driveLimitless(flspeed,frspeed,blspeed, brspeed);
 
         // keep looping while we are still active, and there is time left, and both motors are running.
         while(Math.abs(fl.getCurrentPosition())<Math.abs(fltarget) || Math.abs(fr.getCurrentPosition())<Math.abs(frtarget) || Math.abs(bl.getCurrentPosition())<Math.abs(bltarget) || Math.abs(br.getCurrentPosition())<Math.abs(brtarget))
@@ -178,11 +131,7 @@ public class HardwareGobilda {
                 br.setPower(0);
             }
         }
-
-        fl.setPower(0);
-        fr.setPower(0);
-        bl.setPower(0);
-        br.setPower(0);
+        allStop();
     }
 
 
@@ -195,26 +144,8 @@ public class HardwareGobilda {
 
     public void allStop()
     {
-        fl.setPower(0);
-        fr.setPower(0);
-        bl.setPower(0);
-        br.setPower(0);
+        driveLimitless(0,0,0,0);
     }
-    /*
-    public void moveArmLimitless(int direction){
-     */
-    /*
-        if(direction == 0){
-            lifter.setPower(0);
-        }
-        if(direction == 1){
-            lifter.setPower(0.3);
-        }
-        if(direction == 2){
-            lifter.setPower(-0.3);
-        }
-    }
-    */
 
     /**
      * Returns signed heading that can extend without limit (getIntegratedZValue on modern robotics
