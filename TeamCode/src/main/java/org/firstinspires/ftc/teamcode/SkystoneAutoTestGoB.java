@@ -47,6 +47,7 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
   public void runOpMode() {
 
       robot.init(hardwareMap);
+      robot.resetEncoders();
 
       DateFormat date = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
       d.openDebugFile("CRATER RUN: " + date.format(Calendar.getInstance().getTime()));
@@ -58,19 +59,18 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
           //sampleGoldCrater(finalPos, d);  //Samples and ready to drop Team Marker
           //d.debugMessage("Sampling done.");
           //stopRobot();
-          driveX(DS, 20);
-          strafeRight(DS, 10);
-          driveXback(DS, 20);
-          strafeLeft(DS, 10);
-          sleep(2000);
-          rotate(90);
+          //driveX(DS, robot.getHeadingGyro(), 20);
+          //strafeRight(1, 10);
+          driveXback(DS, robot.getHeadingGyro(), 20);
+          //strafeLeft(DS, 10);
+          //sleep(2000);
+          //rotate(90);
           d.closeDebugger();
       }
   }
 
-    public void driveX(double forwardSpeed, double dist){
+    public void driveX(double forwardSpeed, double startHeading, double dist){
         robot.resetEncoders();
-        double startHeading = robot.getHeadingGyro();
         dist = dist * ENC_PER_INCH;
         telemetry.addData("moving forward (enc val)...", dist);
         telemetry.update();
@@ -87,13 +87,12 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         robot.allStop();
     }
 
-    public void driveXback(double backwardSpeed, double dist){
+    public void driveXback(double backwardSpeed, double startHeading, double dist){
         backwardSpeed = Math.abs(backwardSpeed);
         robot.resetEncoders();
         //telemetry.addData("moving backward...", dist);
         //telemetry.update();
         dist = dist * ENC_PER_INCH;
-        double startHeading = robot.getHeadingGyro();
 
         while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist) {
             moveBackward (backwardSpeed, startHeading);
@@ -115,6 +114,7 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
             telemetry.update();
         }
         robot.allStop();
+        robot.resetEncoders();
     }
 
     public void strafeLeft(double speed, double dist)
@@ -129,6 +129,7 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
             telemetry.update();
         }
         robot.allStop();
+        robot.resetEncoders();
     }
 
     public void moveForward(double forwardSpeed, double startHeading){
