@@ -84,16 +84,12 @@ public class SkyTeleOpOneDriver extends OpMode {
         // COLLECTION and INTAKE of MINERALS GAMEPAD1
         if(gamepad1.right_trigger >= 0.5) {
             robot.base.setPosition(0.12);
-            collectorPower = 1;
         }
         else
         if(gamepad1.left_trigger >= 0.5) {
-            robot.base.setPosition(0.12);
-            collectorPower = -1;
+            robot.base.setPosition(0.88);
         }
-        else {
-            collectorPower = 0;
-        }
+
 
         /*
         // Use gamepad left & right Bumpers to move the intake
