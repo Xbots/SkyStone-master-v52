@@ -23,7 +23,7 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
     double startHeading = 0.0;
     final double GYRO_THRESHOLD = 0.5;
     final double CORRECTION_MULTIPLIER = 0.02;
-    final double ENC_PER_INCH = 31; // relibrated for GoBilda 5202; AndyMark was 44
+    final double ENC_PER_INCH = 31; // recalibrated for GoBilda 5202; AndyMark was 44
     double forwardSpeed = 0.15;
     double leftChange, rightChange;
     double changeNum;
@@ -56,12 +56,9 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
     waitForStart();
 
       if (opModeIsActive()) {
-          //sampleGoldCrater(finalPos, d);  //Samples and ready to drop Team Marker
-          //d.debugMessage("Sampling done.");
-          //stopRobot();
-          //driveX(DS, robot.getHeadingGyro(), 20);
-          //strafeRight(1, 10);
-          driveXback(DS, robot.getHeadingGyro(), 20);
+          driveX(DS, robot.getXHeadingGyro(), 20);
+          strafeRight(1, 10);
+          //driveXback(DS, robot.getXHeadingGyro(), 20);
           //strafeLeft(DS, 10);
           //sleep(2000);
           //rotate(90);
@@ -81,7 +78,7 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         while(opModeIsActive()  && robot.fl.getCurrentPosition() < dist) {
             telemetry.addData("enc val: ", encVal);
             telemetry.update();
-            moveForward (forwardSpeed, startHeading);
+            moveXForward (forwardSpeed, startHeading);
         }
         telemetry.update();
         robot.allStop();
@@ -132,18 +129,18 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         robot.resetEncoders();
     }
 
-    public void moveForward(double forwardSpeed, double startHeading){
+    public void moveXForward(double forwardSpeed, double startHeading){
         leftChange = forwardSpeed;
         rightChange = forwardSpeed;
-        if(robot.getHeadingGyro() - offsetGyro - startHeading > GYRO_THRESHOLD){
-            changeNum = Math.abs(robot.getHeadingGyro() - offsetGyro - startHeading);
+        if(robot.getXHeadingGyro() - offsetGyro - startHeading > GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() - offsetGyro - startHeading);
             rightChange += CORRECTION_MULTIPLIER * changeNum;
-            telemetry.addData("heading: ", robot.getHeadingGyro());
+            telemetry.addData("heading: ", robot.getXHeadingGyro());
             telemetry.addData("right adj: ", rightChange);
-        }else if(robot.getHeadingGyro() - offsetGyro - startHeading < -GYRO_THRESHOLD){
-            changeNum = Math.abs(robot.getHeadingGyro() - offsetGyro - startHeading);
+        }else if(robot.getXHeadingGyro() - offsetGyro - startHeading < -GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() - offsetGyro - startHeading);
             leftChange += CORRECTION_MULTIPLIER * changeNum;
-            telemetry.addData("heading: ", robot.getHeadingGyro());
+            telemetry.addData("heading: ", robot.getXHeadingGyro());
             telemetry.addData("left adj: ", leftChange);
         }else{
             //robot is driving within acceptable range

@@ -29,7 +29,6 @@ public class HardwareGobilda {
     public DcMotor fr  = null;
     public DcMotor bl  = null;
     public DcMotor br  = null;
-
     public BNO055IMU gyro = null;
 
     Orientation lastAngles = new Orientation();
@@ -96,43 +95,6 @@ public class HardwareGobilda {
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-    public void encoderDrive(double flspeed, double frspeed, double blspeed, double brspeed, int fltarget, int frtarget, int bltarget, int brtarget) {
-        int newFLTarget;
-        int newFRTarget;
-        int newBLTarget;
-        int newBRTarget;
-
-        // Determine new target position, and pass to motor controller
-        newFLTarget = fl.getCurrentPosition()+fltarget;
-        newFRTarget = fr.getCurrentPosition()+frtarget;
-        newBLTarget = bl.getCurrentPosition()+bltarget;
-        newBRTarget = br.getCurrentPosition()+brtarget;
-
-        resetEncoders();
-        driveLimitless(flspeed,frspeed,blspeed, brspeed);
-
-        // keep looping while we are still active, and there is time left, and both motors are running.
-        while(Math.abs(fl.getCurrentPosition())<Math.abs(fltarget) || Math.abs(fr.getCurrentPosition())<Math.abs(frtarget) || Math.abs(bl.getCurrentPosition())<Math.abs(bltarget) || Math.abs(br.getCurrentPosition())<Math.abs(brtarget))
-        {
-            if(!(Math.abs(fl.getCurrentPosition())<Math.abs(fltarget)))
-            {
-                fl.setPower(0);
-            }
-            if(!(Math.abs(fr.getCurrentPosition())<Math.abs(frtarget)))
-            {
-                fr.setPower(0);
-            }
-            if(!(Math.abs(bl.getCurrentPosition())<Math.abs(bltarget)))
-            {
-                bl.setPower(0);
-            }
-            if(!(Math.abs(br.getCurrentPosition())<Math.abs(brtarget)))
-            {
-                br.setPower(0);
-            }
-        }
-        allStop();
-    }
 
 
     public void driveLimitless(double flspeed, double frspeed, double blspeed, double brspeed) {
@@ -153,7 +115,7 @@ public class HardwareGobilda {
      *
      * @return
      */
-    public double getHeadingGyro(){
+    public double getXHeadingGyro(){
         Orientation angles = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
