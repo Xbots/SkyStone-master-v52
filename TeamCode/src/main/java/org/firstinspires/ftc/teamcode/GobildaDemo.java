@@ -15,7 +15,7 @@ public class GobildaDemo extends OpMode {
     HardwareGobilda robot = new HardwareGobilda();
     boolean closed = false;
     int close_count = 0;
-    private double speed_multiplier = 0.8;
+    private double speed_multiplier = 1.0;
     private double speed_reverse = 1;
     private double  intakeOffset  = 0.0 ;                  // Servo mid position
     private double  markerOffset  = 0.0 ;                  // Servo mid position
