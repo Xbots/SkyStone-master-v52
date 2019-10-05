@@ -54,7 +54,7 @@ public class HardwareStone {
         fr  = hwMap.dcMotor.get("fr");
         bl   = hwMap.dcMotor.get("bl");
         br  = hwMap.dcMotor.get("br");
-
+        base = hwMap.servo.get("base");
 
         BNO055IMU.Parameters parameters =  new BNO055IMU.Parameters();
         parameters.mode                = BNO055IMU.SensorMode.IMU;
