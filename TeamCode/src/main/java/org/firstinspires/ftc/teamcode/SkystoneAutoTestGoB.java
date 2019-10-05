@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
@@ -46,19 +45,20 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
   @Override
   public void runOpMode() {
 
-      robot.init(hardwareMap);
-      robot.resetEncoders();
+
 
       DateFormat date = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
       d.openDebugFile("CRATER RUN: " + date.format(Calendar.getInstance().getTime()));
       //finalPos = positionEstimateNoReInit(d);//positionEstimate(d); //samples twice in init, lands, then samples once if needed
-
+      robot.init(hardwareMap);
+      robot.resetEncoders();
     waitForStart();
 
       if (opModeIsActive()) {
-          driveX(DS, robot.getXHeadingGyro(), 20);
-          strafeRight(1, 10);
-          //driveXback(DS, robot.getXHeadingGyro(), 20);
+          driveX(DS,  20);
+          //strafeRight(1, 10);
+
+          driveXback(DS, 20);
           //strafeLeft(DS, 10);
           //sleep(2000);
           //rotate(90);
@@ -66,8 +66,10 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
       }
   }
 
-    public void driveX(double forwardSpeed, double startHeading, double dist){
+    public void driveX(double forwardSpeed, double dist){
         robot.resetEncoders();
+        double startHeading =   robot.getXHeadingGyro();
+
         dist = dist * ENC_PER_INCH;
         telemetry.addData("moving forward (enc val)...", dist);
         telemetry.update();
@@ -76,24 +78,25 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         telemetry.addData("enc val start: ", encVal);
 
         while(opModeIsActive()  && robot.fl.getCurrentPosition() < dist) {
-            telemetry.addData("enc val: ", encVal);
-            telemetry.update();
             moveXForward (forwardSpeed, startHeading);
         }
         telemetry.update();
         robot.allStop();
+
     }
 
-    public void driveXback(double backwardSpeed, double startHeading, double dist){
+    public void driveXback(double backwardSpeed, double dist){
         backwardSpeed = Math.abs(backwardSpeed);
+        double startHeading =   robot.getXHeadingGyro();
         robot.resetEncoders();
+
         //telemetry.addData("moving backward...", dist);
         //telemetry.update();
         dist = dist * ENC_PER_INCH;
 
-        while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist) {
-            moveBackward (backwardSpeed, startHeading);
-            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+        while(opModeIsActive()  && robot.fl.getCurrentPosition() > -dist) {
+            moveXBackward (backwardSpeed, startHeading);
+            telemetry.addData("enc val: ", robot.fl.getCurrentPosition());
             telemetry.update();
         }
         robot.allStop();
@@ -149,7 +152,22 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         telemetry.update();
         //comDbg.debugMessage("MvFwd: left Change, right Change: " + Double.toString(leftChange) +", " +Double.toString(rightChange));
     }
-
+    public void moveXBackward(double backwardSpeed, double startHeading){
+        telemetry.addData("movingBack: ", startHeading);
+        telemetry.update();
+        leftChange = backwardSpeed;
+        rightChange = backwardSpeed;
+        if(robot.getXHeadingGyro() -offsetGyro - startHeading > GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() -offsetGyro - startHeading);
+            leftChange += CORRECTION_MULTIPLIER * changeNum;
+        }else if(robot.getXHeadingGyro() -offsetGyro - startHeading < -GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() -offsetGyro - startHeading);
+            rightChange += CORRECTION_MULTIPLIER * changeNum;
+        }else{
+            //robot is driving within acceptable range
+        }
+        robot.driveLimitless(leftChange, -rightChange, leftChange, -rightChange);
+    }
 
 
 }
