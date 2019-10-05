@@ -87,7 +87,7 @@ public class SkyTeleOpOneDriver extends OpMode {
         }
         else
         if(gamepad1.left_trigger >= 0.5) {
-            robot.base.setPosition(0.88);
+            robot.base.setPosition(0.5);
         }
 
 
