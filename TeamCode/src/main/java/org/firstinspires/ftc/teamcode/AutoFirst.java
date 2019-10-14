@@ -87,7 +87,7 @@ public class AutoFirst extends LinearOpMode {
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
-        // first. a
+        // first. b
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
