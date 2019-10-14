@@ -27,18 +27,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
 import java.util.List;
 
 /**
@@ -51,9 +51,9 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Concept: TensorFlow Object Detection", group = "Concept")
-@Disabled
+@TeleOp(name = "Concept: Detect and Strafe", group = "Concept")
 public class AutoFirst extends LinearOpMode {
+
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Stone";
     private static final String LABEL_SECOND_ELEMENT = "Skystone";
@@ -71,8 +71,7 @@ public class AutoFirst extends LinearOpMode {
      * and paste it in to your code on the next line, between the double quotes.
      */
     private static final String VUFORIA_KEY =
-            " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
-
+            "AYEB3rP/////AAABmVMCZTLJIE0TrkP2639XOkl5oPNywXyUOnq52N57nxQ2Q4KVO6xRk1CWWvTIbeZfVku0ISp4m3dPUpfORFAHlDqKOCdLUfRP78YbJexyDYJ+q2KQlap1/SH5sZi/llSpn5Y0b30k/VK/txgdo7TsyZBNZrcldc0KRiwo3NVeQwuVHjxFLJsU0P3MmwNDKZ5Fax3l1yglpGB5Ej2Vevu1gmVfGxxcnMaw0m89+olVLW/rKOB1mOjNC4nwOMsljk/5uY0OMBfkm14r6/HnvXk5bX/GLyBL2gPRdmIL5wtAn0JDjoa+RkhA930mTv0h4Mzh1gZ3PLwWf3Nnt3T5Qu7ffT/RX9zPJ7pKOlp9m4a0Hfs5";
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
      * localization engine.
@@ -85,10 +84,114 @@ public class AutoFirst extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
+    HardwareGobilda robot = new HardwareGobilda();
+
+    double offsetGyro = 0.0;
+    double startHeading = 0.0;
+    final double GYRO_THRESHOLD = 0.5;
+    final double CORRECTION_MULTIPLIER = 0.02;
+    final double ENC_PER_INCH = 31; // recalibrated for GoBilda 5202; AndyMark was 44
+    double forwardSpeed = 0.15;
+    double leftChange, rightChange;
+    double changeNum;
+    final double DRIVE_SPEED = 0.1; //was 0.7
+    final double DS = 0.7;
+    final double MAX_SPEED = 1;
+    final double TURN_CORRECTION = 0.001;
+    double turnSpeed = 0.5;
+    double MIN_TURN_LIMIT = 0.1;
+    double globalAngle, power = .30, correction;
+    Orientation lastAngles = new Orientation();
+
+    //
+    public void driveX(double forwardSpeed, double startHeading, double dist){
+        robot.resetEncoders();
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("moving forward (enc val)...", dist);
+        telemetry.update();
+
+        double encVal = robot.fr.getCurrentPosition();
+        telemetry.addData("enc val start: ", encVal);
+
+        while(opModeIsActive()  && robot.fl.getCurrentPosition() < dist) {
+            telemetry.addData("enc val: ", encVal);
+            telemetry.update();
+            moveXForward (forwardSpeed, startHeading);
+        }
+        telemetry.update();
+        robot.allStop();
+    }
+
+    public void driveXback(double backwardSpeed, double startHeading, double dist){
+        backwardSpeed = Math.abs(backwardSpeed);
+        robot.resetEncoders();
+        //telemetry.addData("moving backward...", dist);
+        //telemetry.update();
+        dist = dist * ENC_PER_INCH;
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist) {
+            //moveBackward (backwardSpeed, startHeading);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+    }
+
+    public void strafeRight(double speed, double dist)
+    {
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("StrafeRight: ", robot.fr.getCurrentPosition());
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist)
+        {
+            robot.driveLimitless(-speed, -speed, speed, speed);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+        robot.resetEncoders();
+    }
+
+    public void strafeLeft(double speed, double dist)
+    {
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("StrafeLeft: ", robot.fr.getCurrentPosition());
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() < dist)
+        {
+            robot.driveLimitless(speed, speed, -speed, -speed);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+        robot.resetEncoders();
+    }
+
+    public void moveXForward(double forwardSpeed, double startHeading){
+        leftChange = forwardSpeed;
+        rightChange = forwardSpeed;
+        if(robot.getXHeadingGyro() - offsetGyro - startHeading > GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() - offsetGyro - startHeading);
+            rightChange += CORRECTION_MULTIPLIER * changeNum;
+            telemetry.addData("heading: ", robot.getXHeadingGyro());
+            telemetry.addData("right adj: ", rightChange);
+        }else if(robot.getXHeadingGyro() - offsetGyro - startHeading < -GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() - offsetGyro - startHeading);
+            leftChange += CORRECTION_MULTIPLIER * changeNum;
+            telemetry.addData("heading: ", robot.getXHeadingGyro());
+            telemetry.addData("left adj: ", leftChange);
+        }else{
+            //robot is driving within acceptable range
+        }
+        robot.driveLimitless(-leftChange, rightChange, -leftChange, rightChange);
+        telemetry.update();
+        //comDbg.debugMessage("MvFwd: left Change, right Change: " + Double.toString(leftChange) +", " +Double.toString(rightChange));
+    }
+
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
-        // first.
+        // first. d
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
@@ -117,18 +220,35 @@ public class AutoFirst extends LinearOpMode {
                     // the last time that call was made.
                     List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                     if (updatedRecognitions != null) {
-                      telemetry.addData("# Object Detected", updatedRecognitions.size());
+                        telemetry.addData("# Object Detected", updatedRecognitions.size());
 
-                      // step through the list of recognitions and display boundary info.
-                      int i = 0;
-                      for (Recognition recognition : updatedRecognitions) {
-                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                          recognition.getLeft(), recognition.getTop());
-                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                recognition.getRight(), recognition.getBottom());
-                      }
-                      telemetry.update();
+                        // step through the list of recognitions and display boundary info.
+                        int i = 0;
+                        for (Recognition recognition : updatedRecognitions) {
+                            telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                            telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                    recognition.getLeft(), recognition.getTop());
+                            telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                    recognition.getRight(), recognition.getBottom());
+                        boolean detect = false;
+
+                        while(!detect){
+
+                            strafeRight(1, 10);
+
+                            if(recognition.getLabel().equals(LABEL_SECOND_ELEMENT)&& recognition.getConfidence()> 0.8){
+
+                                telemetry.addData("Skystone detected at", recognition.getLeft());
+
+                                detect = true;
+
+
+                            }
+
+
+                        }
+                        }
+                        telemetry.update();
                     }
                 }
             }
@@ -162,7 +282,7 @@ public class AutoFirst extends LinearOpMode {
      */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-            "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParameters.minimumConfidence = 0.8;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
