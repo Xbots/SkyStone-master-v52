@@ -87,7 +87,7 @@ public class SkyTeleOpOneDriver extends OpMode {
         }
         else
         if(gamepad1.left_trigger >= 0.5) {
-            robot.base.setPosition(0.5);
+            robot.base.setPosition(0.28);
         }
 
 
@@ -98,32 +98,22 @@ public class SkyTeleOpOneDriver extends OpMode {
 
             robot.intake.setPosition(0.75);
         }
+        */
 
         // LOAD MINERALS INTO CARGO HOLDER ON GAMEPAD1
         if(gamepad1.y) {
-            // get rid of collection box in the way
-            if (robot.intake.getPosition() > 0.4)
-               robot.intake.setPosition(0.5);
-            distPower = 1;
+            robot.fl.setPower(1);
         }
-        else if(gamepad1.a)
-            distPower = -1;
-        else
-            distPower = 0;
-        robot.distributor.setPower(distPower);
-
+        if(gamepad1.a)
+            robot.fr.setPower(1);
         if (gamepad1.x)
-            loaderOffset += INTAKE_SPEED;
-        else if (gamepad1.b)
-            loaderOffset -= INTAKE_SPEED;
-
-        if (gamepad1.x ) {
-            robot.loader.setPosition(1);
-        }
-        if (gamepad1.b){
-            loaderOffset = Range.clip(loaderOffset, -0.5, 0.5);
-            robot.loader.setPosition(robot.MID_SERVO + loaderOffset);
-        }*/
+            robot.bl.setPower(1);
+        if (gamepad1.b)
+            robot.bl.setPower(1);
+        robot.fr.setPower(0);
+        robot.fl.setPower(0);
+        robot.br.setPower(0);
+        robot.bl.setPower(0);
     }
 
 
