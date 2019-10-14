@@ -34,11 +34,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
 import java.util.List;
 
 /**
@@ -53,6 +53,7 @@ import java.util.List;
  */
 @TeleOp(name = "Concept: Detect and Strafe", group = "Concept")
 public class AutoFirst extends LinearOpMode {
+
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Stone";
     private static final String LABEL_SECOND_ELEMENT = "Skystone";
@@ -84,6 +85,109 @@ public class AutoFirst extends LinearOpMode {
     private TFObjectDetector tfod;
 
     HardwareGobilda robot = new HardwareGobilda();
+
+    double offsetGyro = 0.0;
+    double startHeading = 0.0;
+    final double GYRO_THRESHOLD = 0.5;
+    final double CORRECTION_MULTIPLIER = 0.02;
+    final double ENC_PER_INCH = 31; // recalibrated for GoBilda 5202; AndyMark was 44
+    double forwardSpeed = 0.15;
+    double leftChange, rightChange;
+    double changeNum;
+    final double DRIVE_SPEED = 0.1; //was 0.7
+    final double DS = 0.7;
+    final double MAX_SPEED = 1;
+    final double TURN_CORRECTION = 0.001;
+    double turnSpeed = 0.5;
+    double MIN_TURN_LIMIT = 0.1;
+    double globalAngle, power = .30, correction;
+    Orientation lastAngles = new Orientation();
+
+    //
+    public void driveX(double forwardSpeed, double startHeading, double dist){
+        robot.resetEncoders();
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("moving forward (enc val)...", dist);
+        telemetry.update();
+
+        double encVal = robot.fr.getCurrentPosition();
+        telemetry.addData("enc val start: ", encVal);
+
+        while(opModeIsActive()  && robot.fl.getCurrentPosition() < dist) {
+            telemetry.addData("enc val: ", encVal);
+            telemetry.update();
+            moveXForward (forwardSpeed, startHeading);
+        }
+        telemetry.update();
+        robot.allStop();
+    }
+
+    public void driveXback(double backwardSpeed, double startHeading, double dist){
+        backwardSpeed = Math.abs(backwardSpeed);
+        robot.resetEncoders();
+        //telemetry.addData("moving backward...", dist);
+        //telemetry.update();
+        dist = dist * ENC_PER_INCH;
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist) {
+            //moveBackward (backwardSpeed, startHeading);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+    }
+
+    public void strafeRight(double speed, double dist)
+    {
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("StrafeRight: ", robot.fr.getCurrentPosition());
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist)
+        {
+            robot.driveLimitless(-speed, -speed, speed, speed);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+        robot.resetEncoders();
+    }
+
+    public void strafeLeft(double speed, double dist)
+    {
+        dist = dist * ENC_PER_INCH;
+        telemetry.addData("StrafeLeft: ", robot.fr.getCurrentPosition());
+
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() < dist)
+        {
+            robot.driveLimitless(speed, speed, -speed, -speed);
+            telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
+            telemetry.update();
+        }
+        robot.allStop();
+        robot.resetEncoders();
+    }
+
+    public void moveXForward(double forwardSpeed, double startHeading){
+        leftChange = forwardSpeed;
+        rightChange = forwardSpeed;
+        if(robot.getXHeadingGyro() - offsetGyro - startHeading > GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() - offsetGyro - startHeading);
+            rightChange += CORRECTION_MULTIPLIER * changeNum;
+            telemetry.addData("heading: ", robot.getXHeadingGyro());
+            telemetry.addData("right adj: ", rightChange);
+        }else if(robot.getXHeadingGyro() - offsetGyro - startHeading < -GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() - offsetGyro - startHeading);
+            leftChange += CORRECTION_MULTIPLIER * changeNum;
+            telemetry.addData("heading: ", robot.getXHeadingGyro());
+            telemetry.addData("left adj: ", leftChange);
+        }else{
+            //robot is driving within acceptable range
+        }
+        robot.driveLimitless(-leftChange, rightChange, -leftChange, rightChange);
+        telemetry.update();
+        //comDbg.debugMessage("MvFwd: left Change, right Change: " + Double.toString(leftChange) +", " +Double.toString(rightChange));
+    }
+
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
@@ -130,20 +234,18 @@ public class AutoFirst extends LinearOpMode {
 
                         while(!detect){
 
-                            robot.fr.setPower(-0.3);
-
-                            robot.fl.setPower(0.3);
-
-                            robot.br.setPower(0.3);
-
-                            robot.bl.setPower(-0.3);
+                            strafeRight(1, 10);
 
                             if(recognition.getLabel().equals(LABEL_SECOND_ELEMENT)&& recognition.getConfidence()> 0.8){
 
                                 telemetry.addData("Skystone detected at", recognition.getLeft());
 
                                 detect = true;
+
+
                             }
+
+
                         }
                         }
                         telemetry.update();
