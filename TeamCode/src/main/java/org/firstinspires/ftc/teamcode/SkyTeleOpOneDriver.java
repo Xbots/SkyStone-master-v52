@@ -17,7 +17,7 @@ public class SkyTeleOpOneDriver extends OpMode {
     boolean closed = false;
     int close_count = 0;
     private double speed_multiplier = 0.8;
-    private double speed_reverse = -1;                     // reverse the drive wheels
+    private double speed_reverse = 1;                     // reverse the drive wheels
     private double  intakeOffset  = 0.0 ;                  // Servo mid position
     private double  markerOffset  = 0.0 ;                  // Servo mid position
     final double    INTAKE_SPEED  = 0.1 ;                 // sets rate to move servo
