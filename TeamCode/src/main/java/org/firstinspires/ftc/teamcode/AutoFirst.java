@@ -130,7 +130,7 @@ public class AutoFirst extends LinearOpMode {
         dist = dist * ENC_PER_INCH;
 
         while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist) {
-            //moveBackward (backwardSpeed, startHeading);
+            //  moveBackward (backwardSpeed, startHeading);
             telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
             telemetry.update();
         }

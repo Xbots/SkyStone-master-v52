@@ -28,7 +28,6 @@ public class HardwareStone {
     public DcMotor br  = null;
     public BNO055IMU gyro = null;
     public Servo base = null;
-
     Orientation lastAngles = new Orientation();
     double globalAngle = 0;
     public static final double MID_SERVO       =  0.5 ;
