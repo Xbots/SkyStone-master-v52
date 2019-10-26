@@ -56,9 +56,9 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
 
       if (opModeIsActive()) {
           driveX(DS, robot.getXHeadingGyro(), 20);
-//         strafeRight(1, 10);
+          strafeRight(1, 10);
           driveXback(DS, robot.getXHeadingGyro(), 20);
-          //strafeLeft(DS, 10);
+          strafeLeft(DS, 10);
           //sleep(2000);
           //rotate(90);
           d.closeDebugger();
@@ -90,8 +90,8 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         //telemetry.update();
         dist = dist * ENC_PER_INCH;
 
-        while(opModeIsActive()  && robot.fr.getCurrentPosition() > -dist) {
-            moveBackward (backwardSpeed, startHeading);
+        while(opModeIsActive()  && robot.fr.getCurrentPosition() < dist) {
+            moveXBackward (backwardSpeed, startHeading);
             telemetry.addData("enc val: ", robot.fr.getCurrentPosition());
             telemetry.update();
         }
@@ -127,9 +127,29 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         robot.allStop();
         robot.resetEncoders();
     }
-
+    public void moveXBackward(double backwardSpeed, double startHeading){
+        telemetry.addData("movingBack: ", startHeading);
+        telemetry.update();
+        leftChange = backwardSpeed;
+        rightChange = backwardSpeed;
+        if(robot.getXHeadingGyro() -offsetGyro - startHeading > GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() -offsetGyro - startHeading);
+            leftChange += CORRECTION_MULTIPLIER * changeNum;
+        }else if(robot.getXHeadingGyro() -offsetGyro - startHeading < -GYRO_THRESHOLD){
+            changeNum = Math.abs(robot.getXHeadingGyro() -offsetGyro - startHeading);
+            rightChange += CORRECTION_MULTIPLIER * changeNum;
+        }else{
+            //robot is driving within acceptable range
+        }
+        robot.driveLimitless(leftChange, -rightChange, leftChange, -rightChange);
+        //telemetry.addData("heading: ", robot.getHeadingGyro());
+        //telemetry.addData("left adj: ", leftChange);
+        //telemetry.addData("right adj: ", rightChange);
+        //telemetry.update();
+    }
     public void moveXForward(double forwardSpeed, double startHeading){
         leftChange = forwardSpeed;
+
         rightChange = forwardSpeed;
         if(robot.getXHeadingGyro() - offsetGyro - startHeading > GYRO_THRESHOLD){
             changeNum = Math.abs(robot.getXHeadingGyro() - offsetGyro - startHeading);
@@ -144,6 +164,7 @@ public class SkystoneAutoTestGoB extends XplorerCommon {
         }else{
             //robot is driving within acceptable range
         }
+
         robot.driveLimitless(-leftChange, rightChange, -leftChange, rightChange);
         telemetry.update();
         //comDbg.debugMessage("MvFwd: left Change, right Change: " + Double.toString(leftChange) +", " +Double.toString(rightChange));
